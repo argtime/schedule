@@ -31,18 +31,42 @@
             font-weight: bold;
             color: #0078D7;
         }
+
+        .split-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .split {
+            width: 45%;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 10px;
+            background-color: #fff;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>School Schedule Timer</h1>
         <div class="info">
-            <p>Time Remaining Until Next Period:</p>
+            <p id="mainMessage">Time Remaining:</p>
             <div class="timer" id="timeRemaining">Loading...</div>
         </div>
-        <div class="info">
-            <p>Current Period Ends At:</p>
+        <div class="info" id="periodInfo">
+            <p>Loading...</p>
             <div class="timer" id="endTime">Loading...</div>
+        </div>
+        <div class="split-container" id="lunchSplit" style="display: none;">
+            <div class="split" id="firstLunch">
+                <p>1st Lunch</p>
+                <div class="timer" id="firstLunchTime">Loading...</div>
+            </div>
+            <div class="split" id="secondLunch">
+                <p>2nd Lunch</p>
+                <div class="timer" id="secondLunchTime">Loading...</div>
+            </div>
         </div>
     </div>
 
@@ -50,13 +74,20 @@
         const schedule = [
             { name: "Warning", begin: "7:37", end: "7:37" },
             { name: "Period 1", begin: "7:40", end: "8:29" },
+            { name: "Passing Period", begin: "8:29", end: "8:32" },
             { name: "Period 2", begin: "8:32", end: "9:21" },
+            { name: "Passing Period", begin: "9:21", end: "9:24" },
             { name: "Period 3", begin: "9:24", end: "10:13" },
+            { name: "Passing Period", begin: "10:13", end: "10:16" },
             { name: "Period 4", begin: "10:16", end: "11:04" },
+            { name: "Passing Period", begin: "11:04", end: "11:07" },
             { name: "1st Lunch", begin: "11:07", end: "11:37" },
-            { name: "Class", begin: "11:40", end: "12:28" },
-            { name: "2nd Lunch", begin: "11:58", end: "12:28" },
+            { name: "1st Class", begin: "11:37", end: "12:28" },
+            { name: "2nd Class", begin: "11:07", end: "11:55" },
+            { name: "2nd Lunch", begin: "11:55", end: "12:28" },
+            { name: "Passing Period", begin: "12:28", end: "12:31" },
             { name: "Period 6", begin: "12:31", end: "1:19" },
+            { name: "Passing Period", begin: "1:19", end: "1:22" },
             { name: "Period 7", begin: "1:22", end: "2:10" }
         ];
 
@@ -68,21 +99,58 @@
                 const periodStart = parseTime(schedule[i].begin);
                 const periodEnd = parseTime(schedule[i].end);
 
-                if (currentTime < periodEnd) {
-                    const timeRemaining = (periodEnd * 60) - (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds());
-                    document.getElementById("timeRemaining").textContent = formatTime(timeRemaining);
-                    document.getElementById("endTime").textContent = formatEndTime(schedule[i].end);
-                    return;
+                if (currentTime >= periodStart && currentTime < periodEnd) {
+                    if (schedule[i].name === "1st Lunch" || schedule[i].name === "2nd Class") {
+                        handleLunchWave(currentTime);
+                        return;
+                    } else {
+                        resetLunchView();
+                        const timeRemaining = (periodEnd * 60) - (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds());
+                        document.getElementById("timeRemaining").textContent = formatTime(timeRemaining);
+                        document.getElementById("periodInfo").querySelector("p").textContent = `${schedule[i].name} ends at:`;
+                        document.getElementById("endTime").textContent = formatEndTime(schedule[i].end);
+                        return;
+                    }
                 }
             }
 
-            // If no periods are left
+            // Handle after school
+            resetLunchView();
             document.getElementById("timeRemaining").textContent = "School is over!";
+            document.getElementById("periodInfo").querySelector("p").textContent = "School is over!";
             document.getElementById("endTime").textContent = "--:--";
         }
 
+        function handleLunchWave(currentTime) {
+            document.getElementById("lunchSplit").style.display = "flex";
+            document.getElementById("mainMessage").style.display = "none";
+            document.getElementById("periodInfo").style.display = "none";
+
+            const firstLunchStart = parseTime("11:07");
+            const firstLunchEnd = parseTime("11:37");
+            const secondLunchStart = parseTime("11:55");
+            const secondLunchEnd = parseTime("12:28");
+
+            if (currentTime >= firstLunchStart && currentTime < firstLunchEnd) {
+                document.getElementById("firstLunchTime").textContent = formatTime((firstLunchEnd * 60) - (new Date().getHours() * 3600 + new Date().getMinutes() * 60 + new Date().getSeconds()));
+                document.getElementById("secondLunchTime").textContent = "2nd Class ongoing";
+            } else if (currentTime >= secondLunchStart && currentTime < secondLunchEnd) {
+                document.getElementById("firstLunchTime").textContent = "1st Class ongoing";
+                document.getElementById("secondLunchTime").textContent = formatTime((secondLunchEnd * 60) - (new Date().getHours() * 3600 + new Date().getMinutes() * 60 + new Date().getSeconds()));
+            } else {
+                document.getElementById("firstLunchTime").textContent = "Lunch/Class over";
+                document.getElementById("secondLunchTime").textContent = "Lunch/Class over";
+            }
+        }
+
+        function resetLunchView() {
+            document.getElementById("lunchSplit").style.display = "none";
+            document.getElementById("mainMessage").style.display = "block";
+            document.getElementById("periodInfo").style.display = "block";
+        }
+
         function parseTime(timeStr) {
-            const [hours, minutes] = timeStr.split(":").map(Number);
+            const [hours, minutes] = timeStr.split(":" ).map(Number);
             return hours * 60 + minutes;
         }
 
@@ -99,7 +167,7 @@
         }
 
         function formatEndTime(timeStr) {
-            const [hours, minutes] = timeStr.split(":").map(Number);
+            const [hours, minutes] = timeStr.split(":" ).map(Number);
             return `${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
         }
 
