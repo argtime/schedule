@@ -55,7 +55,6 @@
             { name: "Period 4", begin: "10:16", end: "11:04" },
             { name: "1st Lunch", begin: "11:07", end: "11:37" },
             { name: "Class", begin: "11:40", end: "12:28" },
-            { name: "Class", begin: "11:07", end: "11:55" },
             { name: "2nd Lunch", begin: "11:58", end: "12:28" },
             { name: "Period 6", begin: "12:31", end: "1:19" },
             { name: "Period 7", begin: "1:22", end: "2:10" }
@@ -83,12 +82,19 @@
         }
 
         function parseTime(timeStr) {
-            const [hours, minutes] = timeStr.split(":".map(Number));
+            const [hours, minutes] = timeStr.split(":").map(Number);
             return parseInt(hours) * 60 + parseInt(minutes);
         }
 
         function formatTime(minutes) {
             const mins = minutes % 60;
-            const hrs = Math.floor(minutes / h0
+            const hrs = Math.floor(minutes / 60);
+            return `${hrs}:${mins < 10 ? '0' : ''}${mins}`;
+        }
 
-fix>
+        // Update the timer every minute
+        setInterval(updateTimer, 60000);
+        updateTimer(); // Initial call to set the timer immediately
+    </script>
+</body>
+</html>
