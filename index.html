@@ -1,63 +1,113 @@
-<script>
-    const schedule = [
-        { name: "Warning", begin: "7:37", end: "7:37" },
-        { name: "Period 1", begin: "7:40", end: "8:29" },
-        { name: "Period 2", begin: "8:32", end: "9:21" },
-        { name: "Period 3", begin: "9:24", end: "10:13" },
-        { name: "Period 4", begin: "10:16", end: "11:04" },
-        { name: "1st Lunch", begin: "11:07", end: "11:37" },
-        { name: "Class", begin: "11:40", end: "12:28" },
-        { name: "2nd Lunch", begin: "11:58", end: "12:28" },
-        { name: "Period 6", begin: "12:31", end: "1:19" },
-        { name: "Period 7", begin: "1:22", end: "2:10" }
-    ];
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Schedule Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
 
-    function updateTimer() {
-        const now = new Date();
-        const currentTime = now.getHours() * 60 + now.getMinutes();
+        .container {
+            padding: 20px;
+        }
 
-        for (let i = 0; i < schedule.length; i++) {
-            const periodStart = parseTime(schedule[i].begin);
-            const periodEnd = parseTime(schedule[i].end);
+        h1 {
+            color: #333;
+        }
 
-            if (currentTime < periodEnd) {
-                const timeRemaining = (periodEnd * 60) - (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds());
-                document.getElementById("timeRemaining").textContent = formatTime(timeRemaining);
-                document.getElementById("endTime").textContent = formatEndTime(schedule[i].end);
-                return;
+        .info {
+            margin: 20px 0;
+            font-size: 1.5em;
+        }
+
+        .timer {
+            font-size: 2em;
+            font-weight: bold;
+            color: #0078D7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>School Schedule Timer</h1>
+        <div class="info">
+            <p>Time Remaining Until Next Period:</p>
+            <div class="timer" id="timeRemaining">Loading...</div>
+        </div>
+        <div class="info">
+            <p>Current Period Ends At:</p>
+            <div class="timer" id="endTime">Loading...</div>
+        </div>
+    </div>
+
+    <script>
+        const schedule = [
+            { name: "Warning", begin: "7:37", end: "7:37" },
+            { name: "Period 1", begin: "7:40", end: "8:29" },
+            { name: "Period 2", begin: "8:32", end: "9:21" },
+            { name: "Period 3", begin: "9:24", end: "10:13" },
+            { name: "Period 4", begin: "10:16", end: "11:04" },
+            { name: "1st Lunch", begin: "11:07", end: "11:37" },
+            { name: "Class", begin: "11:40", end: "12:28" },
+            { name: "2nd Lunch", begin: "11:58", end: "12:28" },
+            { name: "Period 6", begin: "12:31", end: "1:19" },
+            { name: "Period 7", begin: "1:22", end: "2:10" }
+        ];
+
+        function updateTimer() {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+
+            for (let i = 0; i < schedule.length; i++) {
+                const periodStart = parseTime(schedule[i].begin);
+                const periodEnd = parseTime(schedule[i].end);
+
+                if (currentTime < periodEnd) {
+                    const timeRemaining = (periodEnd * 60) - (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds());
+                    document.getElementById("timeRemaining").textContent = formatTime(timeRemaining);
+                    document.getElementById("endTime").textContent = formatEndTime(schedule[i].end);
+                    return;
+                }
+            }
+
+            // If no periods are left
+            document.getElementById("timeRemaining").textContent = "School is over!";
+            document.getElementById("endTime").textContent = "--:--";
+        }
+
+        function parseTime(timeStr) {
+            const [hours, minutes] = timeStr.split(":").map(Number);
+            return hours * 60 + minutes;
+        }
+
+        function formatTime(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+
+            if (hrs > 0) {
+                return `${hrs}:${mins < 10 ? '0' : ''}${mins}`;
+            } else {
+                return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
             }
         }
 
-        // If no periods are left
-        document.getElementById("timeRemaining").textContent = "School is over!";
-        document.getElementById("endTime").textContent = "--:--";
-    }
-
-    function parseTime(timeStr) {
-        const [hours, minutes] = timeStr.split(":").map(Number);
-        return hours * 60 + minutes;
-    }
-
-    function formatTime(seconds) {
-        const hrs = Math.floor(seconds / 3600);
-        const mins = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
-        
-        if (hrs > 0) {
-            return `${hrs}:${mins < 10 ? '0' : ''}${mins}`;
-        } else {
-            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        function formatEndTime(timeStr) {
+            const [hours, minutes] = timeStr.split(":").map(Number);
+            return `${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
         }
-    }
 
-    function formatEndTime(timeStr) {
-        const [hours, minutes] = timeStr.split(":").map(Number);
-        return `${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
-    }
+        // Update the timer every second to display seconds accurately
+        setInterval(updateTimer, 1000);
 
-    // Update the timer every second to display seconds accurately
-    setInterval(updateTimer, 1000);
-
-    // Initial call to display the timer immediately on page load
-    updateTimer();
-</script>
+        // Initial call to display the timer immediately on page load
+        updateTimer();
+    </script>
+</body>
+</html>
