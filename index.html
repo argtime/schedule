@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Schedule Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .info {
+            margin: 20px 0;
+            font-size: 1.5em;
+        }
+
+        .timer {
+            font-size: 2em;
+            font-weight: bold;
+            color: #0078D7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>School Schedule Timer</h1>
+        <div class="info">
+            <p>Time Remaining Until Next Period:</p>
+            <div class="timer" id="timeRemaining">Loading...</div>
+        </div>
+        <div class="info">
+            <p>Current Period Ends At:</p>
+            <div class="timer" id="endTime">Loading...</div>
+        </div>
+    </div>
+
+    <script>
+        const schedule = [
+            { name: "Warning", begin: "7:37:00", end: "7:37:00" },
+            { name: "Period 1", begin: "7:40:00", end: "8:29:00" },
+            { name: "Period 2", begin: "8:32:00", end: "9:21:00" },
+            { name: "Period 3", begin: "9:24:00", end: "10:13:00" },
+            { name: "Period 4", begin: "10:16:00", end: "11:04:00" },
+            { name: "1st Lunch", begin: "11:07:00", end: "11:37:00" },
+            { name: "Class (1st Lunch Wave)", begin: "11:40:00", end: "12:28:00" },
+            { name: "2nd Lunch", begin: "11:58:00", end: "12:28:00" },
+            { name: "Period 6", begin: "12:31:00", end: "13:19:00" },
+            { name: "Period 7", begin: "13:22:00", end: "14:10:00" }
+        ];
+
+        function updateTimer() {
+            const now = new Date();
+            const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+            let timeRemainingText = "School is over!";
+            let endTimeText = "--:--:--";
+            let multipleTimers = false;
+
+            for (let i = 0; i < schedule.length; i++) {
+                const periodStart = parseTime(schedule[i].begin);
+                const periodEnd = parseTime(schedule[i].end);
+
+                if (currentTime < periodEnd) {
+                    const timeRemaining = periodEnd - currentTime;
+
+                    if (schedule[i].name.includes("Lunch")) {
+                        multipleTimers = true;
+                        const lunchWaveEnd =
+                            schedule[i].name === "1st Lunch" ? "11:37:00" : "12:28:00";
+                        document.getElementById("timeRemaining").innerHTML = `
+                            ${schedule[i].name}: ${formatTime(parseTime(lunchWaveEnd) - currentTime)}`;
+                        document.getElementById("endTime").innerHTML = `
+                            Ends At: ${lunchWaveEnd}`;
+                    } else {
+                        timeRemainingText = formatTime(timeRemaining);
+                        endTimeText = schedule[i].end;
+                    }
+
+                    // Exit early if not handling multiple timers
+                    if (!multipleTimers) {
+                        break;
+                    }
+                }
+            }
+
+            if (!multipleTimers) {
+                document.getElementById("timeRemaining").textContent = timeRemainingText;
+                document.getElementById("endTime").textContent = endTimeText;
+            }
+        }
+
+        function parseTime(timeStr) {
+            const [hours, minutes, seconds] = timeStr.split(":").map(Number);
+            return hours * 3600 + minutes * 60 + seconds;
+        }
+
+        function formatTime(totalSeconds) {
+            const hrs = Math.floor(totalSeconds / 3600);
+            const mins = Math.floor((totalSeconds % 3600) / 60);
+            const secs = totalSeconds % 60;
+            return `${hrs}:${mins < 10 ? "0" : ""}${mins}:${secs < 10 ? "0" : ""}${secs}`;
+        }
+
+        // Update the timer every second
+        setInterval(updateTimer, 1000);
+        updateTimer(); // Initial call to set the timer immediately
+    </script>
+</body>
+</html>
